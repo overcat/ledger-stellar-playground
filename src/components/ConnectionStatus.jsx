@@ -5,7 +5,11 @@ const ConnectionStatus = ({ status, error, onConnect, onDisconnect }) => {
   const [transportType, setTransportType] = useState("webusb");
 
   const handleConnect = async () => {
-    await onConnect(transportType);
+    try {
+      await onConnect(transportType);
+    } catch (error) {
+      // Error is already handled in the hook, just catch to prevent unhandled promise rejection
+    }
   };
 
   const getStatusColor = () => {

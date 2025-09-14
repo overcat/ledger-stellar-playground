@@ -15,27 +15,32 @@ export function useLedgerConnection() {
       let newTransport
 
       if (preferredTransportType === 'webusb') {
+        console.log('Attempting WebUSB connection...')
         const TransportWebUSB = await import('@ledgerhq/hw-transport-webusb')
         newTransport = await TransportWebUSB.default.create()
         setTransportType('webusb')
       } else {
+        console.log('Attempting WebHID connection...')
         const TransportWebHID = await import('@ledgerhq/hw-transport-webhid')
         newTransport = await TransportWebHID.default.create()
         setTransportType('webhid')
       }
 
       // Import Stellar app
+      console.log('Initializing Stellar app...')
       const Str = await import('@ledgerhq/hw-app-str')
       const strApp = new Str.default(newTransport)
 
       setTransport(newTransport)
       setStr(strApp)
       setConnectionStatus('connected')
+      console.log('Connection successful')
 
       return { transport: newTransport, str: strApp }
     } catch (err) {
+      console.error('Connection failed:', err)
       setConnectionStatus('error')
-      setError(err.message)
+      setError(err.message || 'Unknown connection error')
       throw err
     }
   }, [])
