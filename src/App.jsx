@@ -7,7 +7,7 @@ import "./App.css";
 
 function App() {
   const [selectedMethod, setSelectedMethod] = useState("getAppConfiguration");
-  const { str, connectionStatus, connect, disconnect } = useLedgerConnection();
+  const { str, connectionStatus, error, connect, disconnect } = useLedgerConnection();
 
   return (
     <div className="app">
@@ -15,6 +15,7 @@ function App() {
         <h1>Stellar Ledger API Playground</h1>
         <ConnectionStatus
           status={connectionStatus}
+          error={error}
           onConnect={connect}
           onDisconnect={disconnect}
         />

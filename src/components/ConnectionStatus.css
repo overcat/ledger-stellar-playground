@@ -1,5 +1,11 @@
 .connection-status {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.connection-header {
+  display: flex;
   align-items: center;
   gap: 1rem;
 }
@@ -71,6 +77,29 @@
 
 .disconnect-btn:hover {
   background: #dc2626;
+}
+
+.error-message {
+  background: #1f2937;
+  border: 1px solid #ef4444;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 0.5rem;
+}
+
+.error-message p {
+  margin: 0;
+  color: #e5e7eb;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.error-message p + p {
+  margin-top: 0.5rem;
+}
+
+.error-message strong {
+  color: #ef4444;
 }
 
 @media (max-width: 768px) {

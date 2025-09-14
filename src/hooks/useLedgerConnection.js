@@ -5,10 +5,12 @@ export function useLedgerConnection() {
   const [str, setStr] = useState(null)
   const [connectionStatus, setConnectionStatus] = useState('disconnected')
   const [transportType, setTransportType] = useState('webusb')
+  const [error, setError] = useState(null)
 
   const connect = useCallback(async (preferredTransportType = 'webusb') => {
     try {
       setConnectionStatus('connecting')
+      setError(null)
 
       let newTransport
 
@@ -31,9 +33,10 @@ export function useLedgerConnection() {
       setConnectionStatus('connected')
 
       return { transport: newTransport, str: strApp }
-    } catch (error) {
+    } catch (err) {
       setConnectionStatus('error')
-      throw new Error(`Connection failed: ${error.message}`)
+      setError(err.message)
+      throw err
     }
   }, [])
 
@@ -46,6 +49,7 @@ export function useLedgerConnection() {
       setStr(null)
       setConnectionStatus('disconnected')
       setTransportType('webusb')
+      setError(null)
     } catch (error) {
       console.error('Disconnect error:', error)
     }
@@ -56,6 +60,7 @@ export function useLedgerConnection() {
     str,
     connectionStatus,
     transportType,
+    error,
     connect,
     disconnect
   }
