@@ -14,51 +14,62 @@ export function useLedgerConnection() {
     setConnectionStatus('connecting')
     setError(null)
 
+    // Create timeout promise
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error('Connection timeout after 5 seconds'))
+      }, 5000)
+    })
+
     try {
-      let newTransport
+      const connectionPromise = (async () => {
+        let newTransport
 
-      if (preferredTransportType === 'webusb') {
-        console.log('Attempting WebUSB connection...')
-        try {
-          const TransportWebUSB = await import('@ledgerhq/hw-transport-webusb')
-          console.log('WebUSB module loaded, creating transport...')
-          newTransport = await TransportWebUSB.default.create()
-          console.log('WebUSB transport created successfully')
-          setTransportType('webusb')
-        } catch (webUsbError) {
-          console.error('WebUSB creation failed:', webUsbError)
-          throw webUsbError
+        if (preferredTransportType === 'webusb') {
+          console.log('Attempting WebUSB connection...')
+          try {
+            const TransportWebUSB = await import('@ledgerhq/hw-transport-webusb')
+            console.log('WebUSB module loaded, creating transport...')
+            newTransport = await TransportWebUSB.default.create()
+            console.log('WebUSB transport created successfully')
+            setTransportType('webusb')
+          } catch (webUsbError) {
+            console.error('WebUSB creation failed:', webUsbError)
+            throw webUsbError
+          }
+        } else {
+          console.log('Attempting WebHID connection...')
+          try {
+            const TransportWebHID = await import('@ledgerhq/hw-transport-webhid')
+            console.log('WebHID module loaded, creating transport...')
+            newTransport = await TransportWebHID.default.create()
+            console.log('WebHID transport created successfully')
+            setTransportType('webhid')
+          } catch (webHidError) {
+            console.error('WebHID creation failed:', webHidError)
+            throw webHidError
+          }
         }
-      } else {
-        console.log('Attempting WebHID connection...')
+
+        // Import Stellar app
+        console.log('Initializing Stellar app...')
         try {
-          const TransportWebHID = await import('@ledgerhq/hw-transport-webhid')
-          console.log('WebHID module loaded, creating transport...')
-          newTransport = await TransportWebHID.default.create()
-          console.log('WebHID transport created successfully')
-          setTransportType('webhid')
-        } catch (webHidError) {
-          console.error('WebHID creation failed:', webHidError)
-          throw webHidError
+          const Str = await import('@ledgerhq/hw-app-str')
+          const strApp = new Str.default(newTransport)
+
+          setTransport(newTransport)
+          setStr(strApp)
+          setConnectionStatus('connected')
+          console.log('Connection successful')
+
+          return { transport: newTransport, str: strApp }
+        } catch (stellarError) {
+          console.error('Stellar app initialization failed:', stellarError)
+          throw stellarError
         }
-      }
+      })()
 
-      // Import Stellar app
-      console.log('Initializing Stellar app...')
-      try {
-        const Str = await import('@ledgerhq/hw-app-str')
-        const strApp = new Str.default(newTransport)
-
-        setTransport(newTransport)
-        setStr(strApp)
-        setConnectionStatus('connected')
-        console.log('Connection successful')
-
-        return { transport: newTransport, str: strApp }
-      } catch (stellarError) {
-        console.error('Stellar app initialization failed:', stellarError)
-        throw stellarError
-      }
+      return await Promise.race([connectionPromise, timeoutPromise])
     } catch (err) {
       console.error('Connection process failed, updating state:', err)
       setConnectionStatus('error')
