@@ -8,39 +8,62 @@ export function useLedgerConnection() {
   const [error, setError] = useState(null)
 
   const connect = useCallback(async (preferredTransportType = 'webusb') => {
-    try {
-      setConnectionStatus('connecting')
-      setError(null)
+    console.log('Starting connection process...')
 
+    // Reset state
+    setConnectionStatus('connecting')
+    setError(null)
+
+    try {
       let newTransport
 
       if (preferredTransportType === 'webusb') {
         console.log('Attempting WebUSB connection...')
-        const TransportWebUSB = await import('@ledgerhq/hw-transport-webusb')
-        newTransport = await TransportWebUSB.default.create()
-        setTransportType('webusb')
+        try {
+          const TransportWebUSB = await import('@ledgerhq/hw-transport-webusb')
+          console.log('WebUSB module loaded, creating transport...')
+          newTransport = await TransportWebUSB.default.create()
+          console.log('WebUSB transport created successfully')
+          setTransportType('webusb')
+        } catch (webUsbError) {
+          console.error('WebUSB creation failed:', webUsbError)
+          throw webUsbError
+        }
       } else {
         console.log('Attempting WebHID connection...')
-        const TransportWebHID = await import('@ledgerhq/hw-transport-webhid')
-        newTransport = await TransportWebHID.default.create()
-        setTransportType('webhid')
+        try {
+          const TransportWebHID = await import('@ledgerhq/hw-transport-webhid')
+          console.log('WebHID module loaded, creating transport...')
+          newTransport = await TransportWebHID.default.create()
+          console.log('WebHID transport created successfully')
+          setTransportType('webhid')
+        } catch (webHidError) {
+          console.error('WebHID creation failed:', webHidError)
+          throw webHidError
+        }
       }
 
       // Import Stellar app
       console.log('Initializing Stellar app...')
-      const Str = await import('@ledgerhq/hw-app-str')
-      const strApp = new Str.default(newTransport)
+      try {
+        const Str = await import('@ledgerhq/hw-app-str')
+        const strApp = new Str.default(newTransport)
 
-      setTransport(newTransport)
-      setStr(strApp)
-      setConnectionStatus('connected')
-      console.log('Connection successful')
+        setTransport(newTransport)
+        setStr(strApp)
+        setConnectionStatus('connected')
+        console.log('Connection successful')
 
-      return { transport: newTransport, str: strApp }
+        return { transport: newTransport, str: strApp }
+      } catch (stellarError) {
+        console.error('Stellar app initialization failed:', stellarError)
+        throw stellarError
+      }
     } catch (err) {
-      console.error('Connection failed:', err)
+      console.error('Connection process failed, updating state:', err)
       setConnectionStatus('error')
-      setError(err.message || 'Unknown connection error')
+      setError(err.message || err.toString() || 'Unknown connection error')
+      console.log('State updated to error, throwing exception')
       throw err
     }
   }, [])
