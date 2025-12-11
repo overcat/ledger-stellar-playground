@@ -78,6 +78,18 @@ const MainContent = ({ selectedMethod, str, isConnected }) => {
             Buffer.from(params.hash, "hex")
           );
           break;
+        case "signMessage": {
+          // Handle different input formats
+          let messageBuffer;
+          if (params.inputFormat === "base64") {
+            messageBuffer = Buffer.from(params.message, "base64");
+          } else {
+            // Default to text/UTF-8
+            messageBuffer = Buffer.from(params.message, "utf-8");
+          }
+          response = await str.signMessage(params.path, messageBuffer);
+          break;
+        }
         default:
           throw new Error(`Unknown method: ${methodName}`);
       }
@@ -133,6 +145,7 @@ const MainContent = ({ selectedMethod, str, isConnected }) => {
       "signTransaction",
       "signSorobanAuthorization",
       "signHash",
+      "signMessage",
     ];
     if (signingMethods.includes(methodName)) {
       let signatureBuffer = null;

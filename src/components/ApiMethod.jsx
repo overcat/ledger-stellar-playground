@@ -115,6 +115,41 @@ const API_METHOD_CONFIGS = {
       },
     ],
   },
+  signMessage: {
+    title: "Sign Message",
+    description: "Sign a message using your Ledger device.",
+    parameters: [
+      {
+        name: "accountIndex",
+        label: "Account Index",
+        type: "number",
+        placeholder: "0",
+        required: true,
+        description:
+          "Account index for derivation path 44'/148'/x' (default: 0)",
+        min: 0,
+      },
+      {
+        name: "inputFormat",
+        label: "Input Format",
+        type: "select",
+        options: [
+          { value: "text", label: "Text (UTF-8)" },
+          { value: "base64", label: "Base64 Encoded" },
+        ],
+        required: true,
+        description: "Format of the input message",
+      },
+      {
+        name: "message",
+        label: "Message",
+        type: "textarea",
+        placeholder: "Enter message to sign",
+        required: true,
+        description: "Message to sign (text or base64 depending on input format)",
+      },
+    ],
+  },
 };
 
 const ApiMethod = ({ methodName, onMethodCall, isConnected, loading }) => {
@@ -129,6 +164,8 @@ const ApiMethod = ({ methodName, onMethodCall, isConnected, loading }) => {
           initialData[param.name] = "0";
         } else if (param.name === "network") {
           initialData[param.name] = "testnet";
+        } else if (param.name === "inputFormat") {
+          initialData[param.name] = "text";
         }
       });
     }

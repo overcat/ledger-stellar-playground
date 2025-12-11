@@ -7,7 +7,7 @@ const ConnectionStatus = ({ status, error, onConnect, onDisconnect }) => {
   const handleConnect = async () => {
     try {
       await onConnect(transportType);
-    } catch (error) {
+    } catch {
       // Error is already handled in the hook, just catch to prevent unhandled promise rejection
     }
   };
@@ -81,8 +81,14 @@ const ConnectionStatus = ({ status, error, onConnect, onDisconnect }) => {
 
       {error && status === "error" && (
         <div className="error-message">
-          <p><strong>Connection failed:</strong> {error}</p>
-          <p>Please try switching to {transportType === "webusb" ? "WebHID" : "WebUSB"} and connect again.</p>
+          <p>
+            <strong>Connection failed:</strong> {error}
+          </p>
+          <p>
+            Please try switching to{" "}
+            {transportType === "webusb" ? "WebHID" : "WebUSB"} and connect
+            again.
+          </p>
         </div>
       )}
     </div>

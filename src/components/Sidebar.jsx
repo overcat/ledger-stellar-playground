@@ -26,6 +26,11 @@ const API_METHODS = [
     name: "Sign Hash",
     description: "Sign an arbitrary hash",
   },
+  {
+    id: "signMessage",
+    name: "Sign Message",
+    description: "Sign a message with your Ledger device",
+  },
 ];
 
 const Sidebar = ({ selectedMethod, onMethodSelect, isConnected }) => {
